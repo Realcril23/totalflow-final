@@ -1,0 +1,45 @@
+{% extends 'base/base.html' %}
+
+{% block principal %}
+<div class="flex-1 flex items-center justify-center p-6 bg-background-dark relative">
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px]"></div>
+
+    <div class="w-full max-w-md bg-card-dark border border-white/10 p-10 rounded-3xl relative z-10 neon-glow-purple">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-black tracking-tight mb-2">BIENVENIDO DE <span class="text-neon-purple">VUELTA</span></h2>
+            <p class="text-slate-500 text-sm">Ingresa tus credenciales para acceder</p>
+        </div>
+
+        {% if error %}
+        <div class="bg-red-500/10 border border-red-500/50 text-red-500 px-4 py-3 rounded-xl text-xs font-bold mb-6 text-center animate-pulse">
+            <span class="material-symbols-outlined text-sm align-middle mr-1">warning</span>
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-black uppercase text-slate-500 mb-2 ml-1">Usuario</label>
+                <div class="relative">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm">person</span>
+                    <input type="text" name="username" required class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 focus:border-neon-purple focus:ring-1 focus:ring-neon-purple outline-none transition-all text-white" placeholder="Tu usuario">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-black uppercase text-slate-500 mb-2 ml-1">Contraseña</label>
+                <div class="relative">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm">lock</span>
+                    <input type="password" name="password" required class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 focus:border-neon-purple focus:ring-1 focus:ring-neon-purple outline-none transition-all text-white" placeholder="••••••••">
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-primary py-4 rounded-2xl font-bold text-white hover:scale-[1.02] transition-all neon-glow-purple mt-4 flex items-center justify-center gap-2">
+                Iniciar Sesión
+                <span class="material-symbols-outlined">login</span>
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

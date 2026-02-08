@@ -1,0 +1,73 @@
+{% extends 'base/base.html' %}
+
+{% block principal %}
+<main class="flex-1 p-8 overflow-y-auto bg-[#060608] custom-scroll">
+    <div class="flex justify-between items-center mb-10">
+        <div>
+            <h2 class="text-3xl font-black text-white uppercase italic tracking-tighter">
+                Historial de <span class="text-green-500">Pagados</span>
+            </h2>
+            <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Registros de ventas finalizadas</p>
+        </div>
+        
+        <a href="{% url 'dashboard' %}" class="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white px-6 py-3 rounded-2xl border border-white/10 transition-all text-xs font-black uppercase tracking-widest">
+            <span class="material-symbols-outlined text-sm">arrow_back</span>
+            Volver al Panel
+        </a>
+    </div>
+
+    <div class="mb-8 max-w-md">
+        <div class="bg-card-dark border border-white/5 rounded-2xl px-4 py-3 flex items-center gap-3 focus-within:border-green-500 transition-all">
+            <span class="material-symbols-outlined text-green-500">search</span>
+            <input type="text" id="buscadorHistorial" placeholder="Buscar en el archivo..." 
+                   class="bg-transparent border-none focus:ring-0 text-sm w-full text-white outline-none">
+        </div>
+    </div>
+
+    <div id="contenedorHistorial" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for v in ventas %}
+        <div class="tarjeta-historial flex items-center justify-between p-6 bg-card-dark rounded-[2.5rem] border border-white/5 hover:border-green-500/20 transition-all group relative overflow-hidden">
+            <div class="absolute -right-8 -top-8 size-20 bg-green-500/10 rounded-full flex items-end justify-center pb-4 rotate-45">
+                <span class="material-symbols-outlined text-green-500 text-xl">check_circle</span>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="size-16 rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a0c]">
+                    {% if v.figura.imagen %}
+                        <img src="{{ v.figura.imagen.url }}" class="w-full h-full object-cover">
+                    {% endif %}
+                </div>
+                <div>
+                    <p class="text-white font-black uppercase tracking-tight nombre-cliente">{{ v.cliente }}</p>
+                    <p class="text-[10px] text-slate-500 font-medium italic mb-2">{{ v.figura.nombre }}</p>
+                    <span class="text-[9px] bg-green-500/10 text-green-500 px-3 py-1 rounded-full font-black uppercase tracking-tighter">
+                        Pago Completo
+                    </span>
+                </div>
+            </div>
+
+            <div class="text-right">
+                <p class="text-xs text-slate-500 uppercase font-black">Total</p>
+                <p class="text-xl font-black text-white">${{ v.deuda_total|floatformat:2 }}</p>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full py-20 text-center">
+            <span class="material-symbols-outlined text-6xl text-white/5 mb-4">archive</span>
+            <p class="text-slate-500 italic">No hay registros en el historial todavía.</p>
+        </div>
+        {% endfor %}
+    </div>
+</main>
+
+<script>
+    // Buscador específico para el historial
+    document.getElementById('buscadorHistorial').addEventListener('keyup', function() {
+        let valor = this.value.toLowerCase();
+        document.querySelectorAll('.tarjeta-historial').forEach(t => {
+            let texto = t.querySelector('.nombre-cliente').innerText.toLowerCase();
+            t.style.display = texto.includes(valor) ? "flex" : "none";
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,253 @@
+{% extends 'base/base.html' %}
+
+{% block principal %}
+<main class="flex-1 p-8 overflow-y-auto bg-background-dark transition-colors duration-500 relative">
+    
+    {% if not user.is_staff and conteo_global > 0 %}
+    <div class="fixed bottom-10 right-10 z-50 animate-bounce">
+        <a href="{% url 'portal_cliente' %}" class="flex items-center gap-4 bg-neon-blue text-black px-8 py-4 rounded-[2rem] font-black uppercase italic tracking-tighter shadow-[0_0_30px_rgba(0,243,255,0.5)] border-2 border-white/20 hover:scale-110 transition-all group">
+            <span class="material-symbols-outlined group-hover:rotate-12">shopping_cart_checkout</span>
+            <span>Ver mi Pedido ({{ conteo_global }})</span>
+        </a>
+    </div>
+    {% endif %}
+
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
+        <div>
+            <h2 class="text-4xl font-black uppercase italic text-white tracking-tighter">
+                Galería de <span class="text-neon-blue">Artesanía Sacra</span>
+            </h2>
+            <p class="text-slate-500 font-medium text-sm">Gestión integral de inventario y costos de proveedor.</p>
+        </div>
+        
+        {% if user.is_staff %}
+        <button onclick="abrirModal()" class="bg-primary px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:scale-105 transition-all neon-glow-purple text-white">
+            <span class="material-symbols-outlined">add_box</span> Registrar Nueva Imagen
+        </button>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {% for f in figuras %}
+        <div class="bg-card-dark border border-white/5 rounded-3xl p-5 group hover:border-neon-blue/50 transition-all duration-500 flex flex-col relative {% if f.stock <= 0 %}opacity-60 grayscale{% endif %}">
+            
+            <div class="relative aspect-square overflow-hidden rounded-2xl mb-4 bg-white/5">
+                {% if f.imagen %}
+                    <img src="{{ f.imagen.url }}" alt="{{ f.nombre }}" class="w-full h-full object-cover group-hover:scale-110 group-hover:blur-sm transition-all duration-700">
+                    
+                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center p-6 text-center z-20">
+                        <p class="text-neon-blue font-bold uppercase text-[10px] mb-2 tracking-widest">Descripción</p>
+                        <p class="text-white text-xs italic leading-relaxed">
+                            "{{ f.descripcion|default:'Artesanía de calidad premium hecha a mano con acabados finos.' }}"
+                        </p>
+                    </div>
+                {% else %}
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-4xl text-white/10">image_not_supported</span>
+                    </div>
+                {% endif %}
+                
+                <div class="absolute top-3 right-3 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 z-30">
+                    <p class="text-[10px] font-black {% if f.stock > 0 %}text-neon-blue{% else %}text-red-500{% endif %}">
+                        STOCK: {{ f.stock }}
+                    </p>
+                </div>
+
+                <div class="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-[10px] {% if 'VIDRIO' in f.material|upper %}text-neon-purple border-neon-purple/30{% else %}text-neon-blue border-neon-blue/30{% endif %} font-bold border uppercase z-30">
+                    {{ f.material }}
+                </div>
+            </div>
+
+            <h3 class="font-black text-white uppercase text-sm tracking-tight group-hover:text-neon-blue transition-colors italic">
+                {{ f.nombre }}
+            </h3>
+            <p class="text-slate-500 text-[10px] mb-4 font-bold uppercase tracking-widest">
+                {{ f.medida }} - Calidad Premium
+            </p>
+
+            <div class="flex justify-between items-center border-t border-white/5 pt-4 mb-4">
+                <div>
+                    <p class="text-[10px] text-slate-500 uppercase font-black">Precio Venta</p>
+                    <span class="text-xl font-black text-white">${{ f.precio }}</span>
+                </div>
+                {% if user.is_staff %}
+                <div class="text-right">
+                    <p class="text-[10px] text-slate-500 uppercase font-black">Costo Prov.</p>
+                    <span class="text-xs font-black text-neon-purple">${{ f.precio_costo }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="flex gap-2">
+                {% if user.is_staff %}
+                    {% if f.stock > 0 %}
+                    <button onclick="abrirModalVenta('{{ f.id }}', '{{ f.nombre }}', '{{ f.precio }}')" 
+                            class="flex-1 bg-white/5 hover:bg-neon-blue hover:text-black text-white font-black py-3 rounded-xl transition-all text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 group/btn">
+                        <span class="material-symbols-outlined text-sm group-hover/btn:animate-bounce">shopping_cart</span>
+                        Vender
+                    </button>
+                    {% else %}
+                    <button disabled class="flex-1 bg-red-500/10 text-red-500/50 font-black py-3 rounded-xl text-[10px] uppercase tracking-widest cursor-not-allowed italic">
+                        Agotado
+                    </button>
+                    {% endif %}
+
+                    <a href="{% url 'eliminar_figura' f.id %}" 
+                       onclick="return confirm('¿Estás seguro de que deseas eliminar esta pieza?')"
+                       class="bg-red-500/10 hover:bg-red-600 text-red-500 hover:text-white px-3 py-3 rounded-xl transition-all flex items-center justify-center">
+                        <span class="material-symbols-outlined text-sm">delete</span>
+                    </a>
+                {% else %}
+                    {% if f.stock > 0 %}
+                    <a href="{% url 'agregar_al_carrito' f.id %}" 
+                       class="flex-1 bg-neon-blue/20 hover:bg-neon-blue text-neon-blue hover:text-black font-black py-3 rounded-xl transition-all text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 border border-neon-blue/30 group/cart">
+                        <span class="material-symbols-outlined text-sm group-hover/cart:scale-125 transition-transform">add_shopping_cart</span>
+                        Añadir al Carrito
+                    </a>
+                    {% else %}
+                    <button disabled class="flex-1 bg-white/5 text-slate-600 font-black py-3 rounded-xl text-[10px] uppercase tracking-widest cursor-not-allowed italic">
+                        Sin Stock
+                    </button>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</main>
+
+<div id="modalRegistro" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+    <div class="bg-card-dark border border-white/10 w-full max-w-lg rounded-[2.5rem] p-8 shadow-2xl relative">
+        <button onclick="cerrarModal()" class="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        <div class="mb-8">
+            <h3 class="text-3xl font-black uppercase italic text-white tracking-tighter">Nueva <span class="text-neon-purple">Artesanía</span></h3>
+            <p class="text-slate-500 text-[10px] font-black uppercase mt-2 italic">Ingreso de stock a galería</p>
+        </div>
+
+        <form action="{% url 'cursos' %}" method="POST" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="text-[10px] font-black uppercase text-slate-500 ml-4">Nombre de la Imagen</label>
+                <input type="text" name="nombre" required class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-6 text-white focus:border-neon-blue outline-none">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] font-black uppercase text-slate-500 ml-4">Medida (cm)</label>
+                    <input type="text" name="medida" placeholder="Ej: 40cm" required class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-6 text-white focus:border-neon-blue outline-none">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black uppercase text-slate-500 ml-4">Stock Inicial</label>
+                    <input type="number" name="stock" min="0" required class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-6 text-white focus:border-neon-blue outline-none">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4">
+                <div class="col-span-1">
+                    <label class="text-[10px] font-black uppercase text-slate-500 ml-4">Material</label>
+                    <select name="material" class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:border-neon-purple outline-none appearance-none text-xs">
+                        <option value="RESINA">Resina</option>
+                        <option value="VIDRIO">Vidrio/Fibra</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] font-black uppercase text-slate-500 ml-4">P. Venta</label>
+                    <input type="number" name="precio" step="0.01" required placeholder="0.00" class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:border-neon-blue outline-none text-sm">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black uppercase text-neon-purple ml-4">P. Costo</label>
+                    <input type="number" name="precio_costo" step="0.01" required placeholder="0.00" class="w-full bg-white/5 border border-neon-purple/30 rounded-2xl py-3 px-4 text-white focus:border-neon-purple outline-none text-sm">
+                </div>
+            </div>
+            
+            <div>
+                <label class="text-[10px] font-black uppercase text-slate-500 ml-4">Descripción</label>
+                <textarea name="descripcion" rows="2" class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-6 text-white focus:border-neon-blue outline-none resize-none text-sm" placeholder="Detalles de la pieza..."></textarea>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-black uppercase text-slate-500 ml-4">Fotografía</label>
+                <input type="file" name="imagen" accept="image/*" class="w-full bg-white/5 border border-white/10 rounded-2xl py-2 px-6 text-white text-xs file:bg-neon-blue file:rounded-full file:border-0 file:font-bold file:px-4 file:py-1 file:mr-4 cursor-pointer">
+            </div>
+
+            <button type="submit" class="w-full bg-primary text-white font-black py-4 rounded-2xl transition-all neon-glow-purple uppercase tracking-widest text-sm mt-4 active:scale-95">
+                Confirmar Registro
+            </button>
+        </form>
+    </div>
+</div>
+
+<div id="modalVenta" class="hidden fixed inset-0 z-[110] flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+    <div class="bg-card-dark border border-neon-blue/20 w-full max-w-2xl rounded-[3rem] p-8 shadow-2xl relative max-h-[95vh] overflow-y-auto text-white">
+        <h3 class="text-2xl font-black italic uppercase mb-6 flex items-center gap-2">
+            <span class="material-symbols-outlined text-neon-blue">contract_edit</span>
+            Generar <span class="text-neon-blue">Contrato de Venta</span>
+        </h3>
+        
+        <form id="formVenta" method="POST" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            <div class="grid grid-cols-2 gap-4 bg-white/5 p-4 rounded-2xl border border-white/5">
+                <div>
+                    <p class="text-slate-400 text-[8px] uppercase font-black">Producto</p>
+                    <p id="figuraNombre" class="text-white font-bold"></p>
+                </div>
+                <div class="text-right">
+                    <p class="text-slate-400 text-[8px] uppercase font-black">Costo Total</p>
+                    <p id="figuraPrecio" class="text-neon-blue font-black text-xl"></p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="text" name="cliente" required placeholder="Nombre del Cliente" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-sm outline-none focus:border-neon-blue">
+                <input type="text" name="cedula" required placeholder="Cédula de Identidad" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-sm outline-none focus:border-neon-blue">
+                <input type="tel" name="telefono" required placeholder="Número Celular" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-sm outline-none focus:border-neon-blue">
+                <input type="text" name="domicilio" required placeholder="Dirección" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-sm outline-none focus:border-neon-blue">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="text" name="n_contrato" required placeholder="N° de Contrato" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-sm outline-none focus:border-neon-purple font-bold">
+                <input type="date" name="fecha_limite" required class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-sm outline-none focus:border-neon-blue">
+            </div>
+
+            <div>
+                <label class="text-[10px] font-black uppercase text-slate-500 ml-4">Modalidad de Pago</label>
+                <select name="modalidad_pago" required class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-sm outline-none focus:border-neon-purple appearance-none">
+                    <option value="EFECTIVO">Efectivo</option>
+                    <option value="TRANSFERENCIA">Transferencia Bancaria</option>
+                    <option value="TARJETA">Tarjeta de Crédito/Débito</option>
+                    <option value="OTRO">Otro</option>
+                </select>
+            </div>
+
+            <div class="flex gap-4 pt-4">
+                <button type="button" onclick="cerrarModalVenta()" class="flex-1 bg-white/5 text-slate-500 font-black py-4 rounded-2xl uppercase text-[10px]">Cerrar</button>
+                <button type="submit" class="flex-[2] bg-neon-blue text-black font-black py-4 rounded-2xl hover:scale-105 transition-all uppercase tracking-widest text-xs">Emitir Factura</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function abrirModal() {
+        document.getElementById('modalRegistro').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    function cerrarModal() {
+        document.getElementById('modalRegistro').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+    function abrirModalVenta(id, nombre, precio) {
+        document.getElementById('figuraNombre').innerText = nombre;
+        document.getElementById('figuraPrecio').innerText = "$" + precio;
+        document.getElementById('formVenta').action = "/vender/" + id + "/"; 
+        document.getElementById('modalVenta').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    function cerrarModalVenta() {
+        document.getElementById('modalVenta').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+</script>
+{% endblock %}

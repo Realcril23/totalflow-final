@@ -1,0 +1,70 @@
+{% extends 'base/base.html' %}
+
+{% block principal %}
+<main class="flex-1 p-4 md:p-8">
+    <div class="mb-10">
+        <h2 class="text-white text-3xl font-black uppercase italic tracking-tighter">
+            Gestión de <span class="text-neon-blue">Stock / Proveedores</span>
+        </h2>
+        <p class="text-slate-500 text-sm">El sistema usará automáticamente el <b>Precio de Costo</b> configurado para cada pieza.</p>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="mb-6 p-4 rounded-2xl {% if message.tags == 'success' %}bg-green-500/10 border-green-500/20 text-green-400{% else %}bg-red-500/10 border-red-500/20 text-red-400{% endif %} border text-xs font-black uppercase tracking-widest">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {% for figura in figuras %}
+        <div class="bg-card-dark border border-white/5 rounded-[2.5rem] p-4 group hover:border-neon-blue/40 transition-all duration-300">
+            
+            <div class="relative aspect-[4/5] rounded-[2rem] overflow-hidden mb-4 border border-white/10">
+                {% if figura.imagen %}
+                    <img src="{{ figura.imagen.url }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                {% endif %}
+                
+                <div class="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                    <span class="text-[10px] font-black text-neon-blue uppercase">Stock: {{ figura.stock }}</span>
+                </div>
+            </div>
+            
+            <div class="px-2">
+                <h4 class="text-white font-bold uppercase text-sm mb-1 truncate">{{ figura.nombre }}</h4>
+                
+                <div class="bg-white/5 p-2 rounded-xl border border-white/5 mb-4 mt-2">
+                    <div class="flex justify-between text-[10px] uppercase font-black">
+                        <span class="text-slate-500">Venta:</span>
+                        <span class="text-white">${{ figura.precio }}</span>
+                    </div>
+                    <div class="flex justify-between text-[10px] uppercase font-black">
+                        <span class="text-slate-500">Costo Prov:</span>
+                        <span class="text-neon-purple">${{ figura.precio_costo }}</span>
+                    </div>
+                </div>
+
+                <form action="{% url 'actualizar_stock' figura.id %}" method="POST" class="space-y-3">
+                    {% csrf_token %}
+                    <div class="space-y-2">
+                        <label class="text-[9px] text-slate-400 font-black uppercase ml-1">Cantidad a ingresar:</label>
+                        <input type="number" name="cantidad" placeholder="Ej: 10" required min="1"
+                               class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-bold focus:ring-1 focus:ring-neon-blue outline-none transition-all">
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-neon-blue hover:bg-white text-black font-black py-3 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(0,243,255,0.2)]">
+                        <span class="material-symbols-outlined text-sm">inventory</span>
+                        <span class="text-[10px] uppercase">Registrar Entrada</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full py-20 text-center">
+            <p class="text-slate-500 italic">No hay figuras registradas en la galería.</p>
+        </div>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}

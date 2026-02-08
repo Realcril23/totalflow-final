@@ -1,0 +1,117 @@
+{% extends 'base/base.html' %}
+
+{% block principal %}
+<main class="flex-1 flex items-center justify-center p-6 bg-[#060608] relative overflow-hidden">
+    <div class="absolute top-0 -left-20 w-96 h-96 bg-primary/10 rounded-full blur-[120px]"></div>
+    <div class="absolute bottom-0 -right-20 w-96 h-96 bg-neon-blue/10 rounded-full blur-[120px]"></div>
+
+    <div class="relative z-10 w-full max-w-md">
+        <div class="bg-card-dark border border-white/5 p-8 rounded-[2.5rem] shadow-2xl">
+            
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-black uppercase italic text-white tracking-tighter">
+                    Registro de <span class="text-neon-blue">Cliente</span>
+                </h2>
+                <p class="text-slate-500 text-[10px] font-bold mt-2 uppercase tracking-widest">
+                    Únete a la galería de arte sacro TotalFlow
+                </p>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="mb-4 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">error</span>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST" class="space-y-5">
+                {% csrf_token %}
+                
+                <div class="space-y-1">
+                    <label class="text-[9px] font-black uppercase text-slate-500 ml-4 tracking-[0.2em]">Nombre de Usuario</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-lg">person</span>
+                        <input type="text" name="username" required 
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white placeholder:text-slate-600 focus:border-neon-purple focus:ring-0 transition-all outline-none text-sm" 
+                               placeholder="Tu usuario">
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[9px] font-black uppercase text-slate-500 ml-4 tracking-[0.2em]">Correo Electrónico</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-lg">mail</span>
+                        <input type="email" name="email" required 
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white placeholder:text-slate-600 focus:border-neon-purple focus:ring-0 transition-all outline-none text-sm" 
+                               placeholder="ejemplo@correo.com">
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[9px] font-black uppercase text-neon-blue ml-4 tracking-[0.2em]">Cédula / ID</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-neon-blue/60 text-lg">badge</span>
+                        <input type="text" name="cedula" required 
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white placeholder:text-slate-600 focus:border-neon-blue/50 focus:ring-0 transition-all outline-none text-sm" 
+                               placeholder="N° de identificación">
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[9px] font-black uppercase text-slate-500 ml-4 tracking-[0.2em]">Teléfono Contacto</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-lg">call</span>
+                        <input type="text" name="telefono" required 
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white placeholder:text-slate-600 focus:border-neon-purple focus:ring-0 transition-all outline-none text-sm" 
+                               placeholder="Ej: 0987654321">
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[9px] font-black uppercase text-slate-500 ml-4 tracking-[0.2em]">Dirección de Domicilio</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-lg">home_pin</span>
+                        <input type="text" name="domicilio" required 
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white placeholder:text-slate-600 focus:border-neon-purple focus:ring-0 transition-all outline-none text-sm" 
+                               placeholder="Ciudad, Calle y N°">
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[9px] font-black uppercase text-slate-500 ml-4 tracking-[0.2em]">Contraseña</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-lg">lock</span>
+                        <input type="password" name="password" required 
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white placeholder:text-slate-600 focus:border-neon-purple focus:ring-0 transition-all outline-none text-sm" 
+                               placeholder="••••••••">
+                    </div>
+                </div>
+
+                <button type="submit" 
+                        class="w-full bg-primary hover:bg-neon-purple text-white font-black py-4 rounded-2xl transition-all hover:scale-[1.02] active:scale-95 neon-glow-purple uppercase tracking-widest text-sm flex items-center justify-center gap-2 mt-4">
+                    Completar Registro
+                    <span class="material-symbols-outlined">how_to_reg</span>
+                </button>
+            </form>
+
+            <div class="mt-8 text-center">
+                <p class="text-slate-500 text-xs font-medium">
+                    ¿Ya tienes una cuenta? 
+                    <a href="{% url 'login' %}" class="text-neon-blue font-black hover:underline ml-1">Inicia Sesión</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    document.addEventListener('mousemove', (e) => {
+        const x = e.clientX / window.innerWidth;
+        const y = e.clientY / window.innerHeight;
+        document.documentElement.style.setProperty('--mouse-x', x);
+        document.documentElement.style.setProperty('--mouse-y', y);
+    });
+</script>
+{% endblock %}

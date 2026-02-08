@@ -1,0 +1,375 @@
+{% extends 'base/base.html' %}
+
+{% block principal %}
+<main class="flex-1 p-8 overflow-y-auto bg-[#060608] custom-scroll">
+    <div class="flex justify-between items-center mb-10">
+        <div>
+            <h2 class="text-slate-400 text-lg font-medium">Panel de Control: <span class="text-neon-purple font-bold">{{ user.username }}</span></h2>
+        </div>
+        <div class="flex gap-4">
+            <div class="bg-card-dark border border-white/5 rounded-xl px-4 py-2 flex items-center gap-2 focus-within:border-neon-blue transition-all">
+                <span class="material-symbols-outlined text-primary">search</span>
+                <input type="text" id="inputBuscador" placeholder="Buscar cliente..." 
+                       class="bg-transparent border-none focus:ring-0 text-sm w-48 text-white outline-none">
+            </div>
+            
+            <div class="size-10 bg-card-dark border border-white/5 rounded-xl flex items-center justify-center relative cursor-pointer group" onclick="toggleNotificaciones()">
+                <span class="material-symbols-outlined text-slate-400 group-hover:text-neon-purple transition-colors">notifications</span>
+                {% if facturas_pendientes > 0 %}
+                    <span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_10px_#ef4444]"></span>
+                {% endif %}
+                
+                <div id="panelNotificaciones" class="hidden absolute top-12 right-0 w-64 bg-card-dark border border-white/10 rounded-2xl p-4 shadow-2xl z-50">
+                    <h5 class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">Alertas de Cobro</h5>
+                    <div class="space-y-3">
+                        <p class="text-xs text-white">Tienes <span class="text-neon-blue font-bold">{{ facturas_pendientes }}</span> facturas pendientes.</p>
+                        <div class="h-[1px] bg-white/5"></div>
+                        <p class="text-[9px] text-slate-500 italic text-center">Revisa la sección de Cobranzas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-8">
+        <h3 class="flex items-center gap-2 text-xl font-bold mb-6 italic uppercase tracking-tighter text-white">
+            <span class="material-symbols-outlined text-neon-purple">database</span>
+            Almacén de Ganancias
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+            <div class="bg-card-dark p-6 rounded-3xl border border-white/5 group hover:scale-[1.02] hover:border-green-500/30 transition-all duration-300">
+                <p class="text-xs text-slate-500 uppercase font-black mb-2">Ganancia Real</p>
+                <h4 class="text-3xl font-bold text-white">${{ total_neto|floatformat:2 }}</h4>
+                <p class="text-green-400 text-[10px] mt-2 flex items-center gap-1 font-bold">
+                    <span class="material-symbols-outlined text-sm">verified_user</span> LIBRE DE GASTOS
+                </p>
+            </div>
+
+            <div class="bg-card-dark p-6 rounded-3xl border border-white/5 group hover:scale-[1.02] hover:border-orange-500/30 transition-all duration-300">
+                <p class="text-xs text-slate-500 uppercase font-black mb-2 text-orange-400">Otros Gastos</p>
+                <h4 class="text-3xl font-bold text-white">${{ otros_gastos|floatformat:2 }}</h4>
+                <p class="text-slate-500 text-[10px] mt-2 font-bold uppercase tracking-widest">20% OPERATIVO</p>
+            </div>
+
+            <div class="bg-card-dark p-6 rounded-3xl border {% if saldo_caja_chica < 100 %}border-yellow-500/50 animate-pulse{% else %}border-white/5{% endif %}">
+                <p class="text-xs text-slate-500 uppercase font-black mb-2">Caja Chica</p>
+                <h4 class="text-3xl font-bold {% if saldo_caja_chica < 100 %}text-red-500{% else %}text-yellow-500{% endif %}">
+                    ${{ saldo_caja_chica|floatformat:2 }}
+                </h4>
+                <p class="text-[9px] text-slate-600 mt-2 font-black italic uppercase">Saldo para inversión</p>
+            </div>
+
+            <div class="bg-card-dark p-6 rounded-3xl border border-white/5 group hover:scale-[1.02] hover:border-neon-blue/50 transition-all duration-300">
+                <p class="text-xs text-slate-500 uppercase font-black mb-2 text-neon-blue">Por Cobrar</p>
+                <h4 class="text-3xl font-bold text-white">${{ por_cobrar|floatformat:2 }}</h4>
+                <p class="text-slate-500 text-[10px] mt-2 font-bold uppercase tracking-widest">{{ facturas_pendientes }} PENDIENTES</p>
+            </div>
+
+            <div class="bg-card-dark border border-white/5 p-6 rounded-3xl relative overflow-hidden group hover:border-neon-purple/50 transition-all duration-300">
+                <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <span class="material-symbols-outlined text-5xl text-white">inventory_2</span>
+                </div>
+                <p class="text-xs text-slate-500 uppercase font-black mb-2">Capital en Stock</p>
+                <h4 class="text-3xl font-black text-white italic">${{ inversion_stock|floatformat:2 }}</h4>
+                <p class="text-[9px] text-neon-purple font-bold mt-2 uppercase italic">Valor costo</p>
+            </div>
+
+            <div class="bg-card-dark border border-neon-blue/20 p-6 rounded-3xl relative overflow-hidden group shadow-[0_0_20px_rgba(0,243,255,0.03)] hover:border-neon-blue/50 transition-all duration-300">
+                <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <span class="material-symbols-outlined text-5xl text-neon-blue">trending_up</span>
+                </div>
+                <p class="text-xs text-slate-500 uppercase font-black mb-2">Utilidad Esperada</p>
+                <h4 class="text-3xl font-black text-neon-blue italic">${{ ganancia_proyectada|floatformat:2 }}</h4>
+                <p class="text-[9px] text-green-400 font-bold mt-2 uppercase italic">Retorno neto</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 bg-card-dark p-8 rounded-3xl border border-white/5 h-80 flex flex-col relative overflow-hidden">
+            <div class="flex justify-between items-start mb-4 z-10">
+                <div>
+                    <p class="text-xs text-slate-500 uppercase font-black mb-1">Rendimiento Semanal</p>
+                    <h4 class="text-2xl font-bold text-white italic">Flujo de Caja</h4>
+                </div>
+            </div>
+            <div class="flex-1 w-full relative z-10">
+                <canvas id="ventasChart"></canvas>
+            </div>
+        </div>
+
+        <div class="bg-card-dark p-6 rounded-3xl border border-white/5 text-center">
+            <h4 class="text-neon-purple font-bold uppercase text-[10px] tracking-[0.2em] mb-4">Registro de Entregas</h4>
+            <div class="p-4 border border-white/5 rounded-2xl bg-white/5">
+                <p class="text-lg font-bold text-white mb-4">Febrero 2026</p>
+                <div class="grid grid-cols-7 gap-1 text-sm text-white">
+                    <span class="p-2 bg-neon-purple rounded-xl shadow-[0_0_15px_#a855f7]">7</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-8 bg-card-dark p-8 rounded-3xl border border-white/5">
+        <div class="flex justify-between items-center mb-8">
+            <h3 class="text-xl font-black uppercase italic tracking-tighter text-white">
+                Control de <span class="text-neon-blue">Cobranzas</span>
+            </h3>
+            
+            <div class="flex gap-3">
+                <button type="button" onclick="abrirModalProveedor()" class="flex items-center gap-2 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-500 px-4 py-2 rounded-xl border border-yellow-500/20 transition-all text-[10px] font-black uppercase tracking-widest">
+                    <span class="material-symbols-outlined text-sm">local_shipping</span>
+                    Proveedor
+                </button>
+                
+                <a href="{% url 'historial_pagados' %}" class="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white px-4 py-2 rounded-xl border border-white/10 transition-all text-[10px] font-black uppercase tracking-widest">
+                    <span class="material-symbols-outlined text-sm">history</span>
+                    Ver Historial Pagados
+                </a>
+            </div>
+        </div>
+
+        <div id="contenedorVentas" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for v in ventas %}
+            <div class="tarjeta-venta flex items-center justify-between p-5 bg-white/5 rounded-2xl border border-white/5 hover:border-neon-blue/30 transition-all group">
+                <div class="flex items-center gap-4 cursor-pointer" 
+                     onclick="verDetalleFactura('{{ v.cliente }}', '{{ v.cedula|default:'N/A' }}', '{{ v.telefono|default:'S/N' }}', '{{ v.domicilio|default:'S/N' }}', '{{ v.figura.nombre }}', '{{ v.deuda_total }}', '{{ v.monto_pagado }}', '{{ v.id }}', '{% if v.figura.imagen %}{{ v.figura.imagen.url }}{% endif %}', '{{ v.figura.precio_costo }}')">
+                    <div class="size-12 rounded-xl overflow-hidden border border-white/10 bg-[#0a0a0c]">
+                        {% if v.figura.imagen %}
+                            <img src="{{ v.figura.imagen.url }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        {% endif %}
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-white uppercase tracking-tight nombre-cliente">{{ v.cliente }}</p>
+                        <p class="text-[10px] text-slate-500 font-medium italic">{{ v.figura.nombre }}</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-6">
+                    <div class="text-right">
+                        <p class="text-sm font-black text-white">${{ v.saldo_restante|floatformat:2 }}</p>
+                        <p class="text-[9px] font-black uppercase tracking-widest {% if v.estado == 'PAGADO' %}text-green-400{% else %}text-red-500{% endif %}">
+                            {{ v.estado }}
+                        </p>
+                    </div>
+                    {% if v.estado != 'PAGADO' %}
+                    <button type="button" onclick="abrirModalAbono('{{ v.id }}', '{{ v.cliente }}', '{{ v.saldo_restante }}')" class="size-10 rounded-xl bg-neon-blue/10 border border-neon-blue/20 text-neon-blue flex items-center justify-center hover:bg-neon-blue hover:text-black transition-all">
+                        <span class="material-symbols-outlined text-sm">add_card</span>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-2 py-10 text-center">
+                <p class="text-slate-500 italic text-sm">No hay cobranzas pendientes. ¡Todo al día! 🚀</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</main>
+
+<div id="modalDetalle" class="hidden fixed inset-0 z-[120] flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+    <div class="bg-card-dark border border-white/10 w-full max-w-2xl rounded-[3rem] overflow-hidden shadow-2xl relative">
+        <div class="h-32 bg-gradient-to-r from-neon-purple/20 to-neon-blue/20 flex items-end p-8">
+            <h3 class="text-2xl font-black text-white uppercase italic tracking-tighter">Ficha del <span class="text-neon-blue">Cliente</span></h3>
+        </div>
+        <button onclick="cerrarModalDetalle()" class="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] font-black uppercase text-slate-500 tracking-widest">Nombre Completo</label>
+                    <p id="detNombre" class="text-white font-bold text-lg"></p>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] font-black uppercase text-slate-500 tracking-widest">Cédula</label>
+                        <p id="detCedula" class="text-white text-sm font-medium"></p>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black uppercase text-slate-500 tracking-widest">Teléfono</label>
+                        <p id="detTelefono" class="text-white text-sm font-medium"></p>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] font-black uppercase text-slate-500 tracking-widest">Dirección</label>
+                    <p id="detDomicilio" class="text-white text-sm italic"></p>
+                </div>
+                <div class="pt-4 border-t border-white/5">
+                    <label class="text-[10px] font-black uppercase text-neon-purple tracking-widest">Producto</label>
+                    <p id="detProducto" class="text-white font-bold"></p>
+                    <p id="detContrato" class="text-[10px] text-slate-500 font-black"></p>
+                </div>
+            </div>
+
+            <div class="bg-white/5 rounded-3xl p-6 border border-white/5 text-center">
+                <div class="flex justify-center mb-4">
+                    <img id="detImagen" src="" class="size-32 object-cover rounded-2xl border-2 border-neon-blue/30 shadow-[0_0_20px_rgba(0,212,255,0.2)]">
+                </div>
+                <div class="space-y-2 text-left">
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-500">Total:</span>
+                        <span id="detTotal" class="text-white font-bold"></span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-500">Abonado:</span>
+                        <span id="detPagado" class="text-green-400 font-bold"></span>
+                    </div>
+                    <div class="h-[1px] bg-white/10 my-2"></div>
+                    <div class="flex justify-between">
+                        <span class="text-sm font-black text-white uppercase">Saldo:</span>
+                        <span id="detSaldo" class="text-xl font-black text-neon-blue"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modalAbono" class="hidden fixed inset-0 z-[130] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4">
+    <div class="bg-[#0a0a0c] border border-neon-blue/30 w-full max-w-md rounded-[2.5rem] p-8 shadow-[0_0_50px_rgba(0,212,255,0.1)] relative">
+        <h3 class="text-xl font-black text-white uppercase italic mb-2">Registrar <span class="text-neon-blue">Abono</span></h3>
+        <p id="abonoCliente" class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-6"></p>
+        <form id="formAbono" method="POST" class="space-y-6">
+            {% csrf_token %}
+            <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+                <label class="text-[10px] font-black uppercase text-slate-500 block mb-1">Monto a Cobrar</label>
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl font-black text-white">$</span>
+                    <input type="number" name="monto" step="0.01" required 
+                           class="bg-transparent border-none text-3xl font-black text-white focus:ring-0 w-full outline-none" 
+                           placeholder="0.00">
+                </div>
+                <div class="flex justify-between mt-2 pt-2 border-t border-white/5">
+                    <span class="text-[10px] text-slate-500 font-bold uppercase italic">Deuda actual:</span>
+                    <span id="abonoDeuda" class="text-[10px] text-neon-blue font-black"></span>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" onclick="cerrarModalAbono()" class="flex-1 py-4 text-[10px] font-black text-slate-500 uppercase hover:text-white transition-colors">Cancelar</button>
+                <button type="submit" class="flex-[2] bg-neon-blue text-black font-black py-4 rounded-2xl hover:scale-105 transition-all uppercase text-xs">Confirmar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modalProveedor" class="hidden fixed inset-0 z-[140] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4">
+    <div class="bg-[#0a0a0c] border border-yellow-500/30 w-full max-w-md rounded-[2.5rem] p-8 shadow-[0_0_50px_rgba(234,179,8,0.1)] relative">
+        <h3 class="text-xl font-black text-white uppercase italic mb-2">Pago a <span class="text-yellow-500">Proveedor</span></h3>
+        <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-6">Se descontará de la Caja Chica</p>
+        <form action="/pago-proveedor/" method="POST" class="space-y-6">
+            {% csrf_token %}
+            <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+                <label class="text-[10px] font-black uppercase text-slate-500 block mb-1">Monto de la Compra</label>
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl font-black text-white">$</span>
+                    <input type="number" name="monto" step="0.01" required 
+                           class="bg-transparent border-none text-3xl font-black text-white focus:ring-0 w-full outline-none" 
+                           placeholder="0.00">
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" onclick="cerrarModalProveedor()" class="flex-1 py-4 text-[10px] font-black text-slate-500 uppercase hover:text-white transition-colors">Cancelar</button>
+                <button type="submit" class="flex-[2] bg-yellow-500 text-black font-black py-4 rounded-2xl hover:scale-105 transition-all uppercase text-xs">Confirmar Egreso</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Gráfica
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('ventasChart').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(0, 212, 255, 0.4)');
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ grafica_dias|safe }},
+                datasets: [{
+                    data: {{ grafica_monto|safe }},
+                    borderColor: '#00d4ff',
+                    borderWidth: 4,
+                    fill: true,
+                    backgroundColor: gradient,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255, 255, 255, 0.03)' }, ticks: { color: '#64748b' } },
+                    x: { grid: { display: false }, ticks: { color: '#64748b' } }
+                }
+            }
+        });
+    });
+
+    // Filtro Buscador
+    document.getElementById('inputBuscador').addEventListener('keyup', function() {
+        let valor = this.value.toLowerCase();
+        document.querySelectorAll('.tarjeta-venta').forEach(t => {
+            let texto = t.querySelector('.nombre-cliente').innerText.toLowerCase();
+            t.style.display = texto.includes(valor) ? "flex" : "none";
+        });
+    });
+
+    // Funciones Modales
+    function verDetalleFactura(nombre, cedula, telf, dom, prod, total, pagado, id, urlImg) {
+        document.getElementById('detNombre').innerText = nombre;
+        document.getElementById('detCedula').innerText = cedula;
+        document.getElementById('detTelefono').innerText = telf;
+        document.getElementById('detDomicilio').innerText = dom;
+        document.getElementById('detProducto').innerText = prod;
+        document.getElementById('detContrato').innerText = "Venta #" + id;
+        
+        const fTotal = parseFloat(total) || 0;
+        const fPagado = parseFloat(pagado) || 0;
+        const fSaldo = fTotal - fPagado;
+        
+        document.getElementById('detTotal').innerText = "$" + fTotal.toFixed(2);
+        document.getElementById('detPagado').innerText = "$" + fPagado.toFixed(2);
+        document.getElementById('detSaldo').innerText = "$" + fSaldo.toFixed(2);
+        document.getElementById('detImagen').src = urlImg || "https://via.placeholder.com/150";
+        
+        document.getElementById('modalDetalle').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function cerrarModalDetalle() { 
+        document.getElementById('modalDetalle').classList.add('hidden'); 
+        document.body.style.overflow = 'auto';
+    }
+
+    function abrirModalAbono(id, cliente, deuda) {
+        document.getElementById('abonoCliente').innerText = "Cliente: " + cliente;
+        document.getElementById('abonoDeuda').innerText = "$" + (parseFloat(deuda) || 0).toFixed(2);
+        document.getElementById('formAbono').action = "/abonar/" + id + "/";
+        document.getElementById('modalAbono').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function cerrarModalAbono() { 
+        document.getElementById('modalAbono').classList.add('hidden'); 
+        document.body.style.overflow = 'auto';
+    }
+
+    function abrirModalProveedor() {
+        document.getElementById('modalProveedor').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function cerrarModalProveedor() {
+        document.getElementById('modalProveedor').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+    
+    function toggleNotificaciones() { document.getElementById('panelNotificaciones').classList.toggle('hidden'); }
+</script>
+{% endblock %}

@@ -1,0 +1,130 @@
+{% extends 'base/base.html' %}
+
+{% block principal %}
+<main class="flex-1 p-8 overflow-y-auto bg-background-dark transition-colors duration-500">
+    
+    {% if messages %}
+    <div class="mb-6 space-y-2">
+        {% for message in messages %}
+        <div class="p-4 rounded-2xl {% if message.tags == 'success' %}bg-neon-blue/10 text-neon-blue border border-neon-blue/20{% else %}bg-red-500/10 text-red-500 border border-red-500/20{% endif %} font-bold uppercase text-[10px] tracking-widest flex items-center gap-3">
+            <span class="material-symbols-outlined text-sm">info</span>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="mb-10">
+        <h2 class="text-4xl font-black uppercase italic text-white tracking-tighter">
+            Tu Selección de <span class="text-neon-blue">Artesanías</span>
+        </h2>
+        <p class="text-slate-500 font-medium text-sm italic">Fase de revisión: Verifica tus productos antes de confirmar.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <div class="lg:col-span-2 space-y-4">
+            {% for item in items_carrito %}
+            <div class="bg-card-dark border border-white/5 p-5 rounded-[2rem] flex items-center justify-between group hover:border-neon-blue/30 transition-all duration-500 relative overflow-hidden">
+                <div class="absolute inset-0 bg-neon-blue/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+                <div class="flex items-center gap-6 relative z-10">
+                    <div class="w-20 h-20 rounded-2xl overflow-hidden bg-white/5 border border-white/10">
+                        {% if item.figura.imagen %}
+                            <img src="{{ item.figura.imagen.url }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        {% else %}
+                            <div class="w-full h-full flex items-center justify-center">
+                                <span class="material-symbols-outlined text-white/10">image</span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <h4 class="text-white font-black uppercase italic tracking-tight group-hover:text-neon-blue transition-colors">
+                            {{ item.figura.nombre }}
+                        </h4>
+                        <div class="flex items-center gap-3 mt-1">
+                            <span class="text-[10px] bg-white/5 px-2 py-0.5 rounded text-slate-400 font-black uppercase border border-white/10">
+                                {{ item.figura.medida }}
+                            </span>
+                            <p class="text-slate-500 text-[11px] font-bold uppercase">
+                                Cantidad: <span class="text-white">{{ item.cantidad }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-8 relative z-10">
+                    <div class="text-right">
+                        <p class="text-[9px] text-slate-500 uppercase font-black tracking-widest">Subtotal</p>
+                        <p class="text-xl font-black text-white italic">
+                            <span class="text-neon-blue text-sm">$</span>{{ item.subtotal|floatformat:2 }}
+                        </p>
+                    </div>
+                    <a href="{% url 'eliminar_del_carrito' item.id %}" 
+                       class="w-10 h-10 bg-red-500/10 hover:bg-red-600 text-red-500 hover:text-white rounded-xl transition-all flex items-center justify-center group/del">
+                        <span class="material-symbols-outlined text-sm group-hover/del:rotate-90 transition-transform">close</span>
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="border-2 border-dashed border-white/5 rounded-[3rem] p-16 text-center">
+                <span class="material-symbols-outlined text-6xl text-white/5 mb-4">shopping_basket</span>
+                <p class="text-slate-500 font-black uppercase italic tracking-widest text-sm">El carrito está vacío</p>
+                <a href="{% url 'cursos' %}" class="inline-flex items-center gap-2 mt-6 bg-white/5 hover:bg-neon-blue text-white hover:text-black px-8 py-3 rounded-full font-black text-[10px] uppercase transition-all tracking-tighter border border-white/10 hover:border-neon-blue">
+                    Explorar Galería <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="relative">
+            <div class="bg-card-dark border border-neon-blue/20 p-8 rounded-[3rem] sticky top-8 shadow-2xl shadow-neon-blue/5 overflow-hidden">
+                <div class="absolute -top-24 -right-24 w-48 h-48 bg-neon-blue/10 blur-[80px] rounded-full"></div>
+                
+                <h3 class="text-white font-black uppercase italic text-sm tracking-widest mb-8 border-b border-white/5 pb-4">
+                    Resumen de Pedido
+                </h3>
+
+                <div class="space-y-4 mb-8">
+                    <div class="flex justify-between text-[11px] font-bold uppercase text-slate-500">
+                        <span>Items seleccionados</span>
+                        <span class="text-white">{{ items_carrito.count }}</span>
+                    </div>
+                    
+                    <div class="flex justify-between text-[11px] font-bold uppercase text-slate-500">
+                        <span>Subtotal</span>
+                        <span class="text-white">${{ subtotal_puro|floatformat:2 }}</span>
+                    </div>
+
+                    <div class="flex justify-between text-[11px] font-bold uppercase text-neon-blue/80">
+                        <span>Impuestos (IVA 15%)</span>
+                        <span class="text-neon-blue">+ ${{ iva|floatformat:2 }}</span>
+                    </div>
+
+                    <div class="pt-4 border-t border-white/5 flex justify-between items-end">
+                        <p class="text-[10px] font-black text-neon-blue uppercase">Total Neto</p>
+                        <p class="text-4xl font-black text-white italic tracking-tighter">
+                            <span class="text-neon-blue text-xl">$</span>{{ total_carrito|floatformat:2 }}
+                        </p>
+                    </div>
+                </div>
+
+                {% if items_carrito %}
+                <form action="{% url 'confirmar_compra' %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full bg-neon-blue hover:bg-white text-black font-black py-4 rounded-2xl transition-all shadow-[0_0_20px_rgba(0,243,255,0.3)] hover:shadow-white/20 uppercase tracking-widest text-xs flex items-center justify-center gap-3 group">
+                        Confirmar Compra
+                        <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">bolt</span>
+                    </button>
+                </form>
+                <p class="text-[9px] text-slate-600 text-center mt-4 uppercase font-bold tracking-tighter italic">
+                    Al confirmar, se generará tu registro de entrega de pedido.
+                </p>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</main>
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* Ocultar sidebar y resetear márgenes */
+    aside, #sidebar, .sidebar { display: none !important; }
+    main { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
+    
+    .animate-gradient {
+        background-size: 200% auto;
+        animation: shine 3s linear infinite;
+    }
+    @keyframes shine {
+        to { background-position: 200% center; }
+    }
+
+    .neon-glow-purple {
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+    }
+    
+    #mainContainer {
+        transition: background-color 0.7s ease, color 0.7s ease;
+    }
+</style>
+{% endblock %}
+
+{% block principal %}
+<main id="mainContainer" class="flex-1 min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden bg-[#060608]">
+    
+    <div id="glowLeft" class="absolute top-1/4 -left-20 w-96 h-96 bg-primary/20 rounded-full blur-[120px] transition-opacity duration-700"></div>
+    <div id="glowRight" class="absolute bottom-1/4 -right-20 w-96 h-96 bg-neon-purple/20 rounded-full blur-[120px] transition-opacity duration-700"></div>
+
+    <div class="absolute top-8 right-8 z-50">
+        <button onclick="toggleThemeLocal()" class="flex items-center gap-3 px-4 py-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all group">
+            <span id="themeIcon" class="material-symbols-outlined text-neon-blue group-hover:rotate-180 transition-transform">settings_brightness</span>
+            <span id="themeText" class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Modo: Cyberpunk</span>
+        </button>
+    </div>
+
+    <div class="relative z-10 text-center space-y-8 max-w-4xl">
+        <div id="badgeSystem" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-neon-blue text-sm font-medium mb-4">
+            <span class="relative flex h-2 w-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-blue opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-neon-blue"></span>
+            </span>
+            SISTEMA ERP v5.2 - LISTO
+        </div>
+
+        <h1 id="mainTitle" class="text-7xl md:text-8xl font-black tracking-tighter leading-none transition-all text-white">
+            GESTIÓN DE <br/>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-neon-purple to-neon-blue animate-gradient">
+                FLUJO TOTAL
+            </span>
+        </h1>
+
+        <p id="mainDesc" class="text-slate-400 text-xl max-w-2xl mx-auto font-medium">
+            Plataforma integral de facturación electrónica y cobranzas. 
+            Acceda según su perfil para gestionar activos o consultar saldos.
+        </p>
+
+        <div class="flex flex-col md:flex-row gap-6 justify-center pt-4">
+            <a href="{% url 'login' %}" class="group px-10 py-6 bg-primary rounded-3xl font-bold text-lg hover:scale-105 transition-all neon-glow-purple flex flex-col items-center gap-1 border border-white/10 text-white">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined">admin_panel_settings</span>
+                    Ingresar como Administrador
+                </div>
+                <span class="text-[10px] uppercase tracking-widest opacity-60 font-black">Control de Stock y Caja</span>
+            </a>
+
+            <a href="{% url 'login_cliente' %}" class="group px-10 py-6 bg-white/5 border border-white/10 rounded-3xl font-bold text-lg hover:bg-white/10 transition-all text-white flex flex-col items-center gap-1">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-neon-blue">person</span>
+                    Ingresar como Cliente
+                </div>
+                <span class="text-[10px] uppercase tracking-widest text-slate-500 font-black">Pagos y Comprobantes</span>
+            </a>
+        </div>
+    </div>
+</main>
+
+<script>
+    function toggleThemeLocal() {
+        const container = document.getElementById('mainContainer');
+        const text = document.getElementById('themeText');
+        const glowL = document.getElementById('glowLeft');
+        const glowR = document.getElementById('glowRight');
+        const title = document.getElementById('mainTitle');
+        const desc = document.getElementById('mainDesc');
+        const badge = document.getElementById('badgeSystem');
+        
+        if (typeof toggleTheme === "function") {
+            toggleTheme(); 
+        }
+
+        if (container.classList.contains('bg-[#060608]')) {
+            container.classList.replace('bg-[#060608]', 'bg-slate-50');
+            text.innerText = "Modo: Profesional";
+            text.classList.replace('text-slate-400', 'text-slate-900');
+            glowL.style.opacity = '0';
+            glowR.style.opacity = '0';
+            title.classList.replace('text-white', 'text-slate-900');
+            desc.classList.replace('text-slate-400', 'text-slate-600');
+            badge.classList.replace('bg-white/5', 'bg-slate-200');
+            badge.classList.replace('border-white/10', 'border-slate-300');
+        } else {
+            container.classList.replace('bg-slate-50', 'bg-[#060608]');
+            text.innerText = "Modo: Cyberpunk";
+            text.classList.replace('text-slate-900', 'text-slate-400');
+            glowL.style.opacity = '1';
+            glowR.style.opacity = '1';
+            title.classList.replace('text-slate-900', 'text-white');
+            desc.classList.replace('text-slate-600', 'text-slate-400');
+            badge.classList.replace('bg-slate-200', 'bg-white/5');
+            badge.classList.replace('border-slate-300', 'border-white/10');
+        }
+    }
+</script>
+{% endblock %}

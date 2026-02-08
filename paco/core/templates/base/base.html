@@ -1,0 +1,125 @@
+{% load static %}
+<!DOCTYPE html>
+<html id="htmlTag" class="dark theme-cyber" lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>TotalFlow</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    
+    <script>
+    tailwind.config = {
+        darkMode: 'class',
+        theme: {
+            extend: {
+                colors: {
+                    "primary": "var(--primary)",
+                    "neon-purple": "var(--neon-purple)",
+                    "neon-blue": "var(--neon-blue)",
+                    "background-dark": "var(--bg-dark)",
+                    "sidebar-dark": "var(--sidebar-dark)",
+                    "card-dark": "var(--card-dark)",
+                    "text-main": "var(--text-main)",
+                },
+                fontFamily: { sans: ['Manrope', 'sans-serif'] }
+            }
+        }
+    }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer base {
+            :root {
+                --primary: #5b13ec;
+                --neon-purple: #bc13fe;
+                --neon-blue: #00d4ff;
+                --bg-dark: #060608;
+                --sidebar-dark: #0a0812;
+                --card-dark: #0f0c18;
+                --text-main: #ffffff;
+            }
+
+            html:not(.theme-cyber) {
+                --primary: #4f46e5;
+                --neon-purple: #6366f1;
+                --neon-blue: #3b82f6;
+                --bg-dark: #f1f5f9;
+                --sidebar-dark: #1e293b;
+                --card-dark: #ffffff;
+                --text-main: #1e293b;
+            }
+        }
+
+        body {
+            @apply transition-all duration-500;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+        }
+
+        /* --- CORRECCIONES PARA EL MODO PROFESIONAL --- */
+        html:not(.theme-cyber) .bg-card-dark {
+            background-color: white !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+            border-radius: 1rem !important;
+        }
+
+        html:not(.theme-cyber) aside {
+            background-color: #1e293b !important;
+            border-right: 1px solid #334155;
+        }
+
+        /* Estilo para el scroll personalizado */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #1e1e26; border-radius: 10px; }
+        .theme-cyber .custom-scroll::-webkit-scrollbar-thumb { background: #bc13fe33; }
+    </style>
+</head>
+<body class="min-h-screen flex">
+    
+    {% if user.is_authenticated and user.is_staff and request.resolver_match.url_name != 'landing' %}
+        {% include 'base/header_private.html' %}
+    {% endif %}
+
+    <div class="flex-1 flex flex-col h-screen overflow-y-auto custom-scroll">
+        <main class="{% if request.resolver_match.url_name == 'landing' %}p-0{% else %}p-4 md:p-6 lg:p-8{% endif %}">
+            {% block principal %}{% endblock %}
+        </main>
+    </div>
+
+    <script>
+        function aplicarTema(modo) {
+            const html = document.getElementById('htmlTag');
+            if (modo === 'pro') {
+                html.classList.remove('theme-cyber', 'dark');
+                localStorage.setItem('totalflow-theme', 'pro');
+            } else {
+                html.classList.add('theme-cyber', 'dark');
+                localStorage.setItem('totalflow-theme', 'cyber');
+            }
+        }
+
+        function toggleTheme() {
+            const html = document.getElementById('htmlTag');
+            if (html.classList.contains('theme-cyber')) {
+                aplicarTema('pro');
+            } else {
+                aplicarTema('cyber');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const temaGuardado = localStorage.getItem('totalflow-theme');
+            if (temaGuardado === 'pro') {
+                aplicarTema('pro');
+            } else {
+                aplicarTema('cyber');
+            }
+        });
+    </script>
+</body>
+</html>
